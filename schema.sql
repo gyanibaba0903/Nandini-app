@@ -1,0 +1,29 @@
+CREATE TABLE IF NOT EXISTS users (
+    id TEXT PRIMARY KEY,
+    persona TEXT NOT NULL DEFAULT 'nandini',
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS messages (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    role TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS memories (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT NOT NULL,
+    content TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE IF NOT EXISTS crisis_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id TEXT,
+    created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_messages_user ON messages(user_id);
+CREATE INDEX IF NOT EXISTS idx_memories_user ON memories(user_id);
