@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Our Room — Nandini/Shiv</title>
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main class="room">
+  <header>
+    <div class="menu">☰</div>
+    <div class="title">Our Room</div>
+    <div class="persona">Nandini</div>
+  </header>
+
+  <section id="chat" class="chat">
+    <div class="bubble ai">Hi. I'm Nandini. I'm here. ❤️</div>
+  </section>
+
+  <form id="composer">
+    <input id="message" autocomplete="off" placeholder="Talk to me..." />
+    <button type="submit">Send</button>
+  </form>
+</main>
+<script>
+const chat = document.getElementById("chat");
+const form = document.getElementById("composer");
+const input = document.getElementById("message");
+const userId = localStorage.getItem("nandini_user_id") || crypto.randomUUID();
+localStorage.setItem("nandini_user_id", userId);
+
+function add(text, who) {
+  const el = document.createElement("div");
+  el.className = "bubble " + who;
+  el.textContent = text;
+  chat.appendChild(el);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  add(text, "user");
+  input.value = "";
+  try {
+    const r = await fetch("/api/chat", {
+      method: "POST",
+      headers: {"Content-Type":"application/json"},
+      body: JSON.stringify({user_id:userId, message:text, persona:"nandini"})
+    });
+    const data = await r.json();
+    add(data.reply || data.error || "Something went wrong.", "ai");
+  } catch {
+    add("I couldn't reach the server.", "ai");
+  }
+});
+</script>
+</body>
+</html>

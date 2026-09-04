@@ -1,5 +1,11 @@
 [project]
-name = "nandini-free-ai"
-version = "2.0.0"
-requires-python = ">=3.11"
+name = "nandini-d1-worker"
+version = "1.0.0"
+requires-python = ">=3.13"
 dependencies = []
+
+[dependency-groups]
+dev = [
+    "workers-py",
+    "workers-runtime-sdk",
+]

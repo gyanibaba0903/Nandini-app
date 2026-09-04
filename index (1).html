@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Nandini / Shiv</title>
+<style>
+  body { font-family: Arial, sans-serif; max-width: 480px; margin: 30px auto; background: #faf7f5; color: #2b2b2b; }
+  #gate, #onboard, #chatbox { display: none; }
+  #gate.active, #onboard.active, #chatbox.active { display: block; }
+  .msg { padding: 10px 14px; margin: 8px 0; border-radius: 12px; max-width: 80%; line-height: 1.4; }
+  .user { background: #e8d9f7; margin-left: auto; text-align: right; }
+  .ai { background: #ffffff; border: 1px solid #eee; }
+  #log { max-height: 60vh; overflow-y: auto; padding: 10px 0; }
+  input, select, button { font-size: 16px; padding: 10px; border-radius: 8px; border: 1px solid #ccc; }
+  button { background: #7a4fc9; color: white; border: none; cursor: pointer; }
+  #inputRow { display: flex; gap: 8px; margin-top: 10px; }
+  #userInput { flex: 1; }
+  .notice { font-size: 13px; color: #777; margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<div id="gate" class="active">
+  <h2>Nandini / Shiv</h2>
+  <p>This is an early test version of an AI companion. It's here to talk and listen — it is not a therapist, doctor, or human, and it isn't a replacement for real support from people in your life. Your conversation is stored so it can remember context between messages.</p>
+  <p><b>Are you 18 or older?</b></p>
+  <button onclick="confirmAge()">Yes, I'm 18+</button>
+  <p class="notice">If you're not 18+, please don't continue — this isn't set up for younger users yet.</p>
+</div>
+
+<div id="onboard">
+  <h3>Quick setup</h3>
+  <p>Your name (just for memory, not shared with anyone):</p>
+  <input id="nameInput" placeholder="e.g. Rohan">
+  <p>Are you male or female?</p>
+  <select id="genderSelect">
+    <option value="male">Male</option>
+    <option value="female">Female</option>
+  </select>
+  <br><br>
+  <button onclick="startChat()">Start</button>
+</div>
+
+<div id="chatbox">
+  <div id="log"></div>
+  <div id="inputRow">
+    <input id="userInput" placeholder="Type or speak..." onkeydown="if(event.key==='Enter') sendMessage()">
+    <button onclick="sendMessage()">Send</button>
+    <button id="micBtn" onclick="startVoice()">🎤</button>
+  </div>
+  <audio id="player" style="display:none;"></audio>
+</div>
+
+<script>
+let userId = null;
+let persona = "nandini";
+let ageConfirmed = false;
+
+function confirmAge() {
+  ageConfirmed = true;
+  document.getElementById("gate").classList.remove("active");
+  document.getElementById("onboard").classList.add("active");
+}
+
+function startChat() {
+  const name = document.getElementById("nameInput").value.trim() || "guest";
+  const gender = document.getElementById("genderSelect").value;
+  // Opposite-gender voice pairing: male user -> Nandini (female), female user -> Shiv (male)
+  persona = (gender === "male") ? "nandini" : "shiv";
+  userId = name.toLowerCase().replace(/\s+/g, "_");
+  localStorage.setItem("nandini_user_id", userId);
+  localStorage.setItem("nandini_persona", persona);
+  document.getElementById("onboard").classList.remove("active");
+  document.getElementById("chatbox").classList.add("active");
+  addMessage("ai", "Hey, main " + (persona === "nandini" ? "Nandini" : "Shiv") + " hoon. Kaisa chal raha hai sab?");
+}
+
+function addMessage(role, text) {
+  const log = document.getElementById("log");
+  const div = document.createElement("div");
+  div.className = "msg " + (role === "user" ? "user" : "ai");
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function sendMessage() {
+  const input = document.getElementById("userInput");
+  const text = input.value.trim();
+  if (!text) return;
+  addMessage("user", text);
+  input.value = "";
+
+  const res = await fetch("/api/chat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      user_id: userId,
+      persona: persona,
+      message: text,
+      age_confirmed: ageConfirmed
+    })
+  });
+  const data = await res.json();
+  if (data.error) {
+    addMessage("ai", "(error: " + data.error + ")");
+    return;
+  }
+  addMessage("ai", data.reply);
+  if (data.audio_url) {
+    const player = document.getElementById("player");
+    player.src = data.audio_url;
+    player.play();
+  }
+}
+
+function startVoice() {
+  if (!('webkitSpeechRecognition' in window)) {
+    alert("Voice input needs Chrome browser.");
+    return;
+  }
+  const recognition = new webkitSpeechRecognition();
+  recognition.lang = "en-IN";
+  recognition.onresult = (event) => {
+    document.getElementById("userInput").value = event.results[0][0].transcript;
+    sendMessage();
+  };
+  recognition.start();
+}
+</script>
+</body>
+</html>

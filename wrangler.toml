@@ -1,12 +1,4 @@
 name = "nandini-app"
-main = "src/worker.py"
-compatibility_date = "2026-09-03"
+main = "worker.py"
+compatibility_date = "2026-09-04"
 compatibility_flags = ["python_workers"]
-
-[ai]
-binding = "AI"
-
-[[d1_databases]]
-binding = "DB"
-database_name = "nandini-db"
-# Keep your existing database ID in Cloudflare dashboard if this binding is already configured there.
