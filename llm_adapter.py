@@ -1,10 +1,14 @@
 import os
-from groq import Groq
+from openai import OpenAI
 
 class LLMAdapter:
     def __init__(self):
-        self.client = Groq(api_key=os.environ.get("GROQ_API_KEY"))
-        self.model = "llama3-8b-8192"
+        # Using OpenAI SDK to talk to Groq to bypass Python 3.14 httpx bug
+        self.client = OpenAI(
+            api_key=os.environ.get("GROQ_API_KEY"),
+            base_url="https://api.groq.com/openai/v1"
+        )
+        self.model = "llama-3.1-8b-instant"
 
     def generate_response(self, system_prompt, history, user_text):
         messages = [{"role": "system", "content": system_prompt}]
@@ -22,5 +26,4 @@ class LLMAdapter:
             print(f"LLM Error: {e}")
             return "I'm having a little trouble thinking right now."
 
-# Singleton instance
 llm = LLMAdapter()
