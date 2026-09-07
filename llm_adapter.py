@@ -3,12 +3,12 @@ from openai import OpenAI
 
 class LLMAdapter:
     def __init__(self):
-        # Using OpenAI SDK to talk to Groq to bypass Python 3.14 httpx bug
         self.client = OpenAI(
             api_key=os.environ.get("GROQ_API_KEY"),
             base_url="https://api.groq.com/openai/v1"
         )
-        self.model = "llama-3.1-8b-instant"
+        # Using the exact model recommended by Groq's email
+        self.model = "gpt-oss-20b"
 
     def generate_response(self, system_prompt, history, user_text):
         messages = [{"role": "system", "content": system_prompt}]
