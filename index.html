@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Room - Nandini</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Playfair+Display:wght@500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --warm-cream: #F7F1E8; --soft-beige: #EDE2D3; --warm-brown: #6B5143;
+            --deep-charcoal: #292522; --soft-rose: #D98A91; --white: #FFFFFF;
+            --shadow: rgba(107, 81, 67, 0.08);
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { height: 100vh; background: var(--warm-cream); font-family: 'Inter', sans-serif; color: var(--deep-charcoal); display: flex; justify-content: center; align-items: center; }
+        .room-container { width: 100%; max-width: 450px; height: 95vh; background: var(--soft-beige); border-radius: 32px; box-shadow: 0 10px 40px var(--shadow); display: flex; flex-direction: column; overflow: hidden; }
+        .header { padding: 24px; text-align: center; }
+        .header h1 { font-family: 'Playfair Display', serif; font-size: 28px; color: var(--warm-brown); }
+        .presence { font-size: 13px; color: var(--warm-brown); opacity: 0.8; margin-top: 4px; }
+        .chat-box { flex: 1; padding: 20px 24px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+        .message { max-width: 80%; padding: 12px 16px; line-height: 1.5; font-size: 15px; opacity: 0; transform: translateY(10px); animation: fadeIn 0.3s forwards; }
+        @keyframes fadeIn { to { opacity: 1; transform: translateY(0); } }
+        .ai-msg { background: var(--white); color: var(--deep-charcoal); align-self: flex-start; border-radius: 20px 20px 20px 4px; box-shadow: 0 2px 8px var(--shadow); }
+        .user-msg { background: var(--soft-rose); color: var(--white); align-self: flex-end; border-radius: 20px 20px 4px 20px; }
+        .typing-indicator { font-style: italic; color: var(--warm-brown); font-size: 13px; margin-left: 12px; opacity: 0.7; align-self: flex-start; padding: 8px 0; }
+        .input-area { display: flex; align-items: center; padding: 16px 24px 24px; gap: 12px; }
+        input[type="text"] { flex: 1; background: var(--white); border: 1px solid var(--soft-beige); border-radius: 24px; padding: 14px 20px; font-family: 'Inter', sans-serif; font-size: 15px; outline: none; box-shadow: 0 2px 8px var(--shadow); }
+        .send-btn { background: var(--warm-brown); color: var(--white); border: none; border-radius: 50%; width: 44px; height: 44px; cursor: pointer; font-size: 16px; }
+    </style>
+</head>
+<body>
+    <div class="room-container">
+        <header class="header">
+            <h1>Our Room</h1>
+            <div class="presence">Nandini 🌸</div>
+        </header>
+        <main class="chat-box" id="chatBox"></main>
+        <footer class="input-area">
+            <input type="text" id="userInput" placeholder="Type something..." autocomplete="off">
+            <button class="send-btn" onclick="sendMessage()">➤</button>
+        </footer>
+    </div>
+    <script>
+        const chatBox = document.getElementById('chatBox');
+        const userInput = document.getElementById('userInput');
+        window.onload = () => addMessage("Heyy 😊 I'm here. What's on your mind today?", "ai");
+        function addMessage(text, sender) {
+            const div = document.createElement('div');
+            div.classList.add('message', `${sender}-msg`);
+            div.innerText = text;
+            chatBox.appendChild(div);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+        async function sendMessage() {
+            const message = userInput.value.trim();
+            if (!message) return;
+            addMessage(message, "user");
+            userInput.value = '';
+            const typing = document.createElement('div');
+            typing.id = 'typing'; typing.className = 'typing-indicator'; typing.innerText = "Nandini is typing...";
+            chatBox.appendChild(typing); chatBox.scrollTop = chatBox.scrollHeight;
+            try {
+                const res = await fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ message }) });
+                const data = await res.json();
+                document.getElementById('typing').remove();
+                addMessage(data.reply, "ai");
+            } catch (e) {
+                document.getElementById('typing').remove();
+                addMessage("Hmm… something went wrong.", "ai");
+            }
+        }
+        userInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') sendMessage(); });
+    </script>
+</body>
+</html>
