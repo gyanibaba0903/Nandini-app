@@ -4,9 +4,9 @@ from supabase import create_client, Client
 url: str = os.environ.get("SUPABASE_URL", "").strip()
 key: str = os.environ.get("SUPABASE_KEY", "").strip()
 
-# Fix common mistake: Supabase URL must not end with a slash
-if url.endswith("/"):
-    url = url[:-1]
+# ULTIMATE FIX: Force the URL to be perfectly clean. No trailing slashes, no paths.
+if ".supabase.co" in url:
+    url = url.split(".supabase.co")[0] + ".supabase.co"
 
 try:
     supabase: Client = create_client(url, key)
